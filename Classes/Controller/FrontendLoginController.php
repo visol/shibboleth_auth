@@ -32,6 +32,17 @@ class FrontendLoginController extends \TYPO3\CMS\Extbase\Mvc\Controller\ActionCo
      * @var string
      */
     protected $remoteUser;
+    
+    /**
+     * The LoginController is only used to be able to dispatch the LoginConfirmed event.
+     * @var LoginController
+     */
+    private LoginController $loginController;
+
+    public function __construct(LoginController $loginController)
+    {
+        $this->loginController = $loginController;
+    }
 
     public function initializeAction()
     {
@@ -113,6 +124,8 @@ class FrontendLoginController extends \TYPO3\CMS\Extbase\Mvc\Controller\ActionCo
      */
     public function loginSuccessAction()
     {
+        $this->eventDispatcher->dispatch(new LoginConfirmedEvent($this->loginController, $this->view));
+        
         $redirectUrl = GeneralUtility::_GP('redirect_url');
         $targetUrl = GeneralUtility::getIndpEnv('TYPO3_REQUEST_HOST') . $redirectUrl;
         $targetUrl = GeneralUtility::sanitizeLocalUrl($targetUrl);
