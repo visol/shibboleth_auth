@@ -336,12 +336,26 @@ class ShibbolethAuthenticationService extends \TYPO3\CMS\Sv\AbstractAuthenticati
      */
     protected function isShibbolethLogin()
     {
-        $isShibbolethLogin = isset($_SERVER['AUTH_TYPE']) && (strtolower($_SERVER['AUTH_TYPE']) == 'shibboleth');
-        if (!$isShibbolethLogin) {
-            $isShibbolethLogin = isset($_SERVER['REDIRECT_Shib_Session_ID']);
-        }
+        if (
+            GeneralUtility::_GP('disableShibboleth') !== null
+            || $_COOKIE['be_disableShibboleth']
+        ) {
+            $cookieSecure = (bool)$GLOBALS['TYPO3_CONF_VARS']['SYS']['cookieSecure'] && GeneralUtility::getIndpEnv('TYPO3_SSL');
+            $cookie = new Cookie(
+                'be_disableShibboleth',
+                '1',
+                $GLOBALS['EXEC_TIME'] + 3600, // 1 hour
+                GeneralUtility::getIndpEnv('TYPO3_SITE_PATH') . TYPO3_mainDir,
+                '',
+                $cookieSecure,
+                true,
+                false,
+                Cookie::SAMESITE_STRICT
+            );
+            header('Set-Cookie: ' . $cookie->__toString(), false);
 
-        return $isShibbolethLogin && !empty($this->remoteUser);
+            return false;
+        }
     }
 
     /**
