@@ -259,12 +259,35 @@ class ShibbolethAuthenticationService extends AbstractAuthenticationService
         return implode(',', $frontendUserGroupUids);
     }
 
-    protected function isShibbolethLogin(): bool
+    /**
+     * @return bool
+     */
+    protected function isShibbolethLogin()
     {
-        $isShibbolethLogin = isset($_SERVER['AUTH_TYPE']) && (strtolower($_SERVER['AUTH_TYPE']) === 'shibboleth');
+        if (
+            GeneralUtility::_GP('disableShibboleth') !== null
+            || $_COOKIE['be_disableShibboleth']
+        ) {
+            $cookieSecure = (bool)$GLOBALS['TYPO3_CONF_VARS']['SYS']['cookieSecure'] && GeneralUtility::getIndpEnv('TYPO3_SSL');
+            $cookie = new Cookie(
+                'be_disableShibboleth',
+                '1',
+                $GLOBALS['EXEC_TIME'] + 3600, // 1 hour
+                GeneralUtility::getIndpEnv('TYPO3_SITE_PATH') . TYPO3_mainDir,
+                '',
+                $cookieSecure,
+                true,
+                false,
+                Cookie::SAMESITE_STRICT
+            );
+            header('Set-Cookie: ' . $cookie->__toString(), false);
+
+            return false;
+        }
+
+        $isShibbolethLogin = isset($_SERVER['AUTH_TYPE']) && (strtolower($_SERVER['AUTH_TYPE']) == 'shibboleth');
         if (!$isShibbolethLogin) {
-            // In some cases, no AUTH_TYPE is set. We then fall back to find out if Shib_Session_ID is set
-            $isShibbolethLogin = isset($_SERVER['Shib_Session_ID']) || isset($_SERVER['REDIRECT_Shib_Session_ID']);
+            $isShibbolethLogin = isset($_SERVER['REDIRECT_Shib_Session_ID']);
         }
 
         return $isShibbolethLogin && !empty($this->remoteUser);
