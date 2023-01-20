@@ -16,9 +16,11 @@ namespace Visol\ShibbolethAuth\Controller;
  */
 
 use TYPO3\CMS\Core\Configuration\ExtensionConfiguration;
+use TYPO3\CMS\Core\Configuration\Features;
 use TYPO3\CMS\Core\Context\Context;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Core\Utility\HttpUtility;
+use TYPO3\CMS\Frontend\Authentication\FrontendUserAuthentication;
 
 class FrontendLoginController extends \TYPO3\CMS\Extbase\Mvc\Controller\ActionController
 {
@@ -96,7 +98,7 @@ class FrontendLoginController extends \TYPO3\CMS\Extbase\Mvc\Controller\ActionCo
 
         // If the target page already includes an exclamation sign (e.g. non-RealURL page), we must use an ampersand here
         $target .= !strpos($target, '?') ? '?' : '&';
-        $target .= 'logintype=login&pid=' . $this->extensionConfiguration['storagePid'];
+        $target .= 'logintype=login&pid=' . $this->resolveLoginStoragePid();
 
         $loginHandlerUrl = $this->extensionConfiguration['loginHandler'];
         $queryStringSeparator = !strpos($loginHandlerUrl, '?') ? '?' : '&';
@@ -147,5 +149,31 @@ class FrontendLoginController extends \TYPO3\CMS\Extbase\Mvc\Controller\ActionCo
             $configuredRedirectPage = $this->settings['redirectPage'];
         }
         return $configuredRedirectPage;
+    }
+
+
+    /**
+     * Resolves the login storage pid value to be used during an HTTP request.
+     * Depending on the feature flag for `security.frontend.enforceLoginSigning`,
+     * this will be a plain value (`'1234'`) or HMAC-signed (`'1234@<HMAC-of-123>'`
+     * (see https://typo3.org/security/advisory/typo3-core-sa-2022-013).
+     */
+    protected function resolveLoginStoragePid(): string
+    {
+        $storagePid = (string)($this->extensionConfiguration['storagePid'] ?? '0');
+        if (!$this->shallEnforceLoginSigning()) {
+            return $storagePid;
+        }
+        return sprintf(
+            '%s@%s',
+            $storagePid,
+            GeneralUtility::hmac($storagePid, FrontendUserAuthentication::class)
+        );
+    }
+
+    protected function shallEnforceLoginSigning(): bool
+    {
+        return GeneralUtility::makeInstance(Features::class)
+            ->isFeatureEnabled('security.frontend.enforceLoginSigning');
     }
 }
