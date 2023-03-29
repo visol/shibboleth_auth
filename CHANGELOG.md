@@ -1,3 +1,10 @@
+## 6.2.0 (2023-03-29)
+
+[DOCS] Update BE_fetchUserIfNoSession description to include login_status parameter
+[TASK] Add login_status parameter to redirect URL
+[TASK] Remove cookie code block in isShibbolethLogin() method
+[TASK] Add return type declaration to showLogoutAction method
+
 ## 6.1.1 (2023-01-20)
 
 [BUGFIX] Apply HMAC-signing to login pid parameter
