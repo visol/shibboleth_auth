@@ -36,6 +36,17 @@ class FrontendLoginController extends ActionController
      * @var string
      */
     protected $remoteUser;
+    
+    /**
+     * The LoginController is only used to be able to dispatch the LoginConfirmed event.
+     * @var LoginController
+     */
+    private LoginController $loginController;
+
+    public function __construct(LoginController $loginController)
+    {
+        $this->loginController = $loginController;
+    }
 
     public function initializeAction()
     {
@@ -115,6 +126,8 @@ class FrontendLoginController extends ActionController
      */
     public function loginSuccessAction(): ResponseInterface
     {
+        $this->eventDispatcher->dispatch(new LoginConfirmedEvent($this->loginController, $this->view));
+        
         $redirectUrl = GeneralUtility::_GP('redirect_url');
         $targetUrl = GeneralUtility::getIndpEnv('TYPO3_REQUEST_HOST') . $redirectUrl;
         $targetUrl = GeneralUtility::sanitizeLocalUrl($targetUrl);
