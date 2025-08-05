@@ -10,11 +10,12 @@ This extension enables the single sign-on based on Shibboleth for frontend and b
 
 This package is currently maintained for the following versions:
 
-| TYPO3 Version     | Package Version | Branch  | Maintained    |
-|-------------------|-----------------|---------|---------------|
-| TYPO3 11.5.x      | 6.x             | master  | Yes           |
-| TYPO3 10.4.x      | 5.x             | v5      | No            |
-| TYPO3 8.x         | 4.x             | v4      | No            |
+| TYPO3 Version | Package Version      | Branch | Maintained |
+|---------------|----------------------|--------|------------|
+| TYPO3 13.4.x  | 7.x (in development) | main   | Yes        |
+| TYPO3 11.5.x  | 6.x                  | v11    | No         |
+| TYPO3 10.4.x  | 5.x                  | v5     | No         |
+| TYPO3 8.x     | 4.x                  | v4     | No         |
 
 
 Prerequisites

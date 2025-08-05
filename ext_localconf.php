@@ -24,12 +24,13 @@ defined('TYPO3') || die();
         $GLOBALS['TYPO3_CONF_VARS']['SVCONF']['auth']['setup']['BE_fetchUserIfNoSession'] = $extensionConfiguration['BE_fetchUserIfNoSession'];
 
         // Register backend logout handler
+        // TODO: Replace with https://docs.typo3.org/permalink/t3coreapi:afteruserloggedoutevent
         $GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['t3lib/class.t3lib_userauth.php']['logoff_post_processing'][] = UserAuthentication::class . '->backendLogoutHandler';
 
         $GLOBALS['TYPO3_CONF_VARS']['EXTCONF']['backend']['loginProviders'][1518433441] = [
             'provider' => ShibbolethLoginProvider::class,
             'sorting' => 60,
-            'icon-class' => 'fa-sign-in',
+            'iconIdentifier' => 'actions-login',
             'label' => 'LLL:EXT:shibboleth_auth/Resources/Private/Language/locallang.xlf:backend_login.header'
         ];
     }

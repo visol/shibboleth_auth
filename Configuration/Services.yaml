@@ -1,0 +1,10 @@
+services:
+  _defaults:
+    autowire: true
+    autoconfigure: true
+    public: false
+
+  Visol\ShibbolethAuth\EventListener\TokenlessAuthenticationListener:
+    tags:
+      - name: event.listener
+        identifier: 'shibboleth-auth/tokenless-authentication-listener'
