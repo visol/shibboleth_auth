@@ -1,7 +1,7 @@
 plugin.tx_shibbolethauth {
-	view {
-		templateRootPaths.10 = {$plugin.tx_shibbolethauth.view.templateRootPath}
-		partialRootPaths.10 = {$plugin.tx_shibbolethauth.view.partialRootPath}
-		layoutRootPaths.10 = {$plugin.tx_shibbolethauth.view.layoutRootPath}
-	}
+  view {
+    templateRootPaths.10 = {$plugin.tx_shibbolethauth.view.templateRootPath}
+    partialRootPaths.10 = {$plugin.tx_shibbolethauth.view.partialRootPath}
+    layoutRootPaths.10 = {$plugin.tx_shibbolethauth.view.layoutRootPath}
+  }
 }

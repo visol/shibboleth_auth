@@ -1,35 +1,32 @@
+<?xml version="1.0"?>
 <T3DataStructure>
-<meta>
-	<langDisable>1</langDisable>
-</meta>
-<sheets>
-	<sDEF>
-		<ROOT>
-			<TCEforms>
-				<sheetTitle>LLL:EXT:shibboleth_auth/Resources/Private/Language/locallang_db.xlf:flexform.sheetTitle</sheetTitle>
-			</TCEforms>
-			<type>array</type>
-			<el>
-				<settings.redirectPage>
-					<TCEforms>
-						<label>LLL:EXT:shibboleth_auth/Resources/Private/Language/locallang_db.xlf:flexform.redirectPage</label>
-						<config>
-							<type>group</type>
-							<internal_type>db</internal_type>
-							<allowed>pages</allowed>
-							<size>1</size>
-							<maxitems>1</maxitems>
-							<minitems>0</minitems>
-							<wizards>
-								<suggest>
-									<type>suggest</type>
-								</suggest>
-							</wizards>
-						</config>
-					</TCEforms>
-				</settings.redirectPage>
-			</el>
-		</ROOT>
-	</sDEF>
-</sheets>
+    <meta>
+        <langDisable>1</langDisable>
+    </meta>
+    <sheets>
+        <sDEF>
+            <ROOT>
+                <sheetTitle>LLL:EXT:shibboleth_auth/Resources/Private/Language/locallang_db.xlf:flexform.sheetTitle</sheetTitle>
+                <type>array</type>
+                <el>
+                    <settings.redirectPage>
+                        <label>LLL:EXT:shibboleth_auth/Resources/Private/Language/locallang_db.xlf:flexform.redirectPage</label>
+                        <config>
+                            <type>group</type>
+                            <internal_type>db</internal_type>
+                            <allowed>pages</allowed>
+                            <size>1</size>
+                            <maxitems>1</maxitems>
+                            <minitems>0</minitems>
+                            <wizards>
+                                <suggest>
+                                    <type>suggest</type>
+                                </suggest>
+                            </wizards>
+                        </config>
+                    </settings.redirectPage>
+                </el>
+            </ROOT>
+        </sDEF>
+    </sheets>
 </T3DataStructure>
