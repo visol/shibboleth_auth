@@ -4,6 +4,9 @@ services:
     autoconfigure: true
     public: false
 
+  Visol\ShibbolethAuth\:
+    resource: '../Classes/*'
+
   Visol\ShibbolethAuth\EventListener\TokenlessAuthenticationListener:
     tags:
       - name: event.listener

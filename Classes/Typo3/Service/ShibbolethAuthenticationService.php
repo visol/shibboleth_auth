@@ -332,7 +332,7 @@ class ShibbolethAuthenticationService extends AbstractAuthenticationService
         $recordData = $queryBuilder->select('*')->from($frontendUserGroupTable)->where(
                 $queryBuilder->expr()->eq('title', $queryBuilder->createNamedParameter($title)),
                 $queryBuilder->expr()->eq('pid', $this->extensionConfiguration['storagePid']),
-            )->execute()->fetchAssociative();
+            )->executeQuery()->fetchAssociative();
 
         if ($recordData) {
             return $recordData['uid'];
@@ -348,7 +348,7 @@ class ShibbolethAuthenticationService extends AbstractAuthenticationService
                 'title' => $title,
             ]
         );
-        return (int)$databaseConnection->lastInsertId($frontendUserGroupTable);
+        return (int)$databaseConnection->lastInsertId();
     }
 
     protected function getDatabaseConnectionPool(): ConnectionPool

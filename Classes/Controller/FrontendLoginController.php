@@ -14,32 +14,28 @@ namespace Visol\ShibbolethAuth\Controller;
  *
  * The TYPO3 project - inspiring people to share!
  */
+
 use Psr\Http\Message\ResponseInterface;
-use TYPO3\CMS\Core\Configuration\Features;
+use TYPO3\CMS\Core\Crypto\HashService;
 use TYPO3\CMS\Extbase\Http\ForwardResponse;
 use TYPO3\CMS\Extbase\Mvc\Controller\ActionController;
 use TYPO3\CMS\Core\Configuration\ExtensionConfiguration;
 use TYPO3\CMS\Core\Context\Context;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
-use TYPO3\CMS\Core\Utility\HttpUtility;
 use TYPO3\CMS\Frontend\Authentication\FrontendUserAuthentication;
 
 class FrontendLoginController extends ActionController
 {
 
-    /**
-     * @var array
-     */
-    protected $extensionConfiguration;
+    protected array $extensionConfiguration = [];
 
-    /**
-     * @var string
-     */
-    protected $remoteUser;
+    protected string $remoteUser = '';
 
-    public function initializeAction()
+    public function initializeAction(): void
     {
-        $this->extensionConfiguration = GeneralUtility::makeInstance(ExtensionConfiguration::class)->get('shibboleth_auth');
+        $this->extensionConfiguration = GeneralUtility::makeInstance(ExtensionConfiguration::class)->get(
+            'shibboleth_auth'
+        );
 
         if (empty($this->extensionConfiguration['remoteUser'])) {
             $this->extensionConfiguration['remoteUser'] = 'REMOTE_USER';
@@ -54,10 +50,13 @@ class FrontendLoginController extends ActionController
         $context = GeneralUtility::makeInstance(Context::class);
 
         // Login type
-        $loginType = GeneralUtility::_GP('logintype');
+        $loginType = $this->request->getParsedBody()['logintype'] ?? $this->request->getQueryParams(
+        )['logintype'] ?? null;
 
         // URL to redirect to
-        $redirectUrl = GeneralUtility::_GP('redirect_url');
+        $redirectUrl = $this->request->getParsedBody()['redirect_url'] ?? $this->request->getQueryParams(
+        )['redirect_url'] ?? null;
+        $referer = $this->request->getParsedBody()['referer'] ?? $this->request->getQueryParams()['referer'] ?? null;
 
         // Is user logged in?
         $userIsLoggedIn = $context->getPropertyFromAspect('frontend.user', 'isLoggedIn');
@@ -65,7 +64,7 @@ class FrontendLoginController extends ActionController
         // What to display
         if ($userIsLoggedIn) {
             $this->remoteUser = $context->getPropertyFromAspect('frontend.user', 'username');
-            if (!empty($redirectUrl) || $this->getConfiguredRedirectPage()) {
+            if (!empty($redirectUrl) || !empty($referer) || $this->getConfiguredRedirectPage()) {
                 return new ForwardResponse('loginSuccess');
             } else {
                 return new ForwardResponse('showLogout');
@@ -91,11 +90,11 @@ class FrontendLoginController extends ActionController
         if ($this->extensionConfiguration['forceSSL'] && !GeneralUtility::getIndpEnv('TYPO3_SSL')) {
             $target = str_ireplace('http:', 'https:', $target);
             if (!preg_match('#["<>\\\]+#', $target)) {
-                HttpUtility::redirect($target);
+                return $this->redirectToUri($target);
             }
         }
 
-        // If the target page already includes an exclamation sign (e.g. non-RealURL page), we must use an ampersand here
+        // If the target page already includes an exclamation sign (e.g. non-speaking URL), we must use an ampersand here
         $target .= !strpos($target, '?') ? '?' : '&';
         $target .= 'logintype=login&pid=' . $this->resolveLoginStoragePid();
 
@@ -115,18 +114,25 @@ class FrontendLoginController extends ActionController
      */
     public function loginSuccessAction(): ResponseInterface
     {
-        $redirectUrl = GeneralUtility::_GP('redirect_url');
-        $targetUrl = GeneralUtility::getIndpEnv('TYPO3_REQUEST_HOST') . $redirectUrl;
+        $redirectUrl = $this->request->getParsedBody()['redirect_url'] ?? $this->request->getQueryParams(
+        )['redirect_url'] ?? null;
+        $referer = $this->request->getParsedBody()['referer'] ?? $this->request->getQueryParams(
+        )['referer'] ?? null;
+
+        $targetUrl = $redirectUrl ?: $referer;
+        $typo3RequestHost = GeneralUtility::getIndpEnv('TYPO3_REQUEST_HOST');
+        $targetUrl = !str_starts_with($targetUrl, $typo3RequestHost) ? $typo3RequestHost . $targetUrl : $targetUrl;
         $targetUrl = GeneralUtility::sanitizeLocalUrl($targetUrl);
 
         $configuredRedirectPage = $this->getConfiguredRedirectPage();
 
-        if (empty($redirectUrl) && !empty($configuredRedirectPage)) {
+        if (empty($redirectUrl) && empty($referer) && !empty($configuredRedirectPage)) {
             $absoluteUriScheme = (bool)$this->extensionConfiguration['forceSSL'] ? 'https' : 'http';
-            $targetUrl = $this->uriBuilder->setTargetPageUid((int)$configuredRedirectPage)->setAbsoluteUriScheme($absoluteUriScheme)->setCreateAbsoluteUri(true)->build();
+            $targetUrl = $this->uriBuilder->setTargetPageUid((int)$configuredRedirectPage)->setAbsoluteUriScheme(
+                $absoluteUriScheme
+            )->setCreateAbsoluteUri(true)->build();
         }
-        HttpUtility::redirect($targetUrl);
-        return $this->htmlResponse();
+        return $this->redirectToUri($targetUrl);
     }
 
     /**
@@ -141,8 +147,7 @@ class FrontendLoginController extends ActionController
     {
         $redirectUrl = $this->extensionConfiguration['logoutHandler'];
         $redirectUrl = GeneralUtility::sanitizeLocalUrl($redirectUrl);
-        HttpUtility::redirect($redirectUrl);
-        return $this->htmlResponse();
+        return $this->redirectToUri($redirectUrl);
     }
 
     protected function getConfiguredRedirectPage()
@@ -156,26 +161,16 @@ class FrontendLoginController extends ActionController
 
     /**
      * Resolves the login storage pid value to be used during an HTTP request.
-     * Depending on the feature flag for `security.frontend.enforceLoginSigning`,
-     * this will be a plain value (`'1234'`) or HMAC-signed (`'1234@<HMAC-of-123>'`
-     * (see https://typo3.org/security/advisory/typo3-core-sa-2022-013).
      */
     protected function resolveLoginStoragePid(): string
     {
         $storagePid = (string)($this->extensionConfiguration['storagePid'] ?? '0');
-        if (!$this->shallEnforceLoginSigning()) {
-            return $storagePid;
-        }
+        $hashService = GeneralUtility::makeInstance(HashService::class);
         return sprintf(
             '%s@%s',
             $storagePid,
-            GeneralUtility::hmac($storagePid, FrontendUserAuthentication::class)
+            $hashService->hmac($storagePid, FrontendUserAuthentication::class)
         );
     }
 
-    protected function shallEnforceLoginSigning(): bool
-    {
-        return GeneralUtility::makeInstance(Features::class)
-            ->isFeatureEnabled('security.frontend.enforceLoginSigning');
-    }
 }

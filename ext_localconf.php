@@ -50,7 +50,8 @@ defined('TYPO3') || die();
             // non-cacheable actions
             [
                 FrontendLoginController::class => 'index,loginSuccess,logoutSuccess',
-            ]
+            ],
+            ExtensionUtility::PLUGIN_TYPE_CONTENT_ELEMENT
         );
 
         // Configure if session should be fetched on each page load

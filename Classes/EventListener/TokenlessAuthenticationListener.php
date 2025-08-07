@@ -21,5 +21,9 @@ final class TokenlessAuthenticationListener
         $event->setRequestToken(
             RequestToken::create('core/user-auth/' . strtolower($user->loginType)),
         );
+        $pidParam = (string)($requestToken->params['pid'] ?? '');
+        if ($user->checkPid) {
+            $user->checkPid_value = $pidParam;
+        }
     }
 }

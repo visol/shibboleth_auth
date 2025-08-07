@@ -22,11 +22,6 @@ use TYPO3\CMS\Core\Page\PageRenderer;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Fluid\View\StandaloneView;
 
-/**
- * Class OpenIdLoginProvider
- *
- * @package FoT3\Openid\LoginProvider
- */
 class ShibbolethLoginProvider implements LoginProviderInterface
 {
 
