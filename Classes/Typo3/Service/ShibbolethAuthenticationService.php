@@ -50,7 +50,7 @@ class ShibbolethAuthenticationService extends AbstractAuthenticationService
         if (empty($this->extensionConfiguration['displayName'])) {
             $this->extensionConfiguration['displayName'] = 'displayName';
         }
-        $this->remoteUser = $_SERVER[$this->extensionConfiguration['remoteUser']];
+        $this->remoteUser = $_SERVER[$this->extensionConfiguration['remoteUser']] ?? null;
         return parent::init();
     }
 
