@@ -1,7 +1,9 @@
 <?php
 
-namespace Visol\ShibbolethAuth\Hook;
+namespace Visol\ShibbolethAuth\EventListener;
 
+use TYPO3\CMS\Core\Attribute\AsEventListener;
+use TYPO3\CMS\Core\Authentication\Event\AfterUserLoggedOutEvent;
 use TYPO3\CMS\Core\Utility\StringUtility;
 
 /**
@@ -17,10 +19,13 @@ use TYPO3\CMS\Core\Utility\StringUtility;
  * The TYPO3 project - inspiring people to share!
  */
 
-class UserAuthentication
+#[AsEventListener(
+    identifier: 'shibboleth-auth/logout-listener',
+)]
+final readonly class LogoutListener
 {
 
-    public function backendLogoutHandler()
+    public function __invoke(AfterUserLoggedOutEvent $event): void
     {
         // Delete the Shibboleth session cookie
         foreach ($_COOKIE as $name => $value) {
