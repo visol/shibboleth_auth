@@ -3,7 +3,6 @@
 use Visol\ShibbolethAuth\Controller\FrontendLoginController;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Core\Configuration\ExtensionConfiguration;
-use Visol\ShibbolethAuth\Hook\UserAuthentication;
 use Visol\ShibbolethAuth\LoginProvider\ShibbolethLoginProvider;
 use TYPO3\CMS\Extbase\Utility\ExtensionUtility;
 use TYPO3\CMS\Core\Utility\ExtensionManagementUtility;
@@ -22,10 +21,6 @@ defined('TYPO3') || die();
         $subTypes[] = 'authUserBE';
 
         $GLOBALS['TYPO3_CONF_VARS']['SVCONF']['auth']['setup']['BE_fetchUserIfNoSession'] = $extensionConfiguration['BE_fetchUserIfNoSession'];
-
-        // Register backend logout handler
-        // TODO: Replace with https://docs.typo3.org/permalink/t3coreapi:afteruserloggedoutevent
-        $GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['t3lib/class.t3lib_userauth.php']['logoff_post_processing'][] = UserAuthentication::class . '->backendLogoutHandler';
 
         $GLOBALS['TYPO3_CONF_VARS']['EXTCONF']['backend']['loginProviders'][1518433441] = [
             'provider' => ShibbolethLoginProvider::class,
