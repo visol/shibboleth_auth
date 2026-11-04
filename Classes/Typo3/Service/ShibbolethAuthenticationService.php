@@ -86,7 +86,7 @@ class ShibbolethAuthenticationService extends AbstractAuthenticationService
     {
         $user = false;
         if ($this->login['status'] == 'login' && $this->isShibbolethLogin() && empty($this->login['uname'])) {
-            $user = $this->fetchUserRecord($this->remoteUser);
+            $user = $this->fetchShibbolethUserRecord();
             if (!is_array($user) || empty($user)) {
                 if ($this->isLoginTypeFrontend(
                     ) && !empty($this->remoteUser) && $this->extensionConfiguration['enableAutoImport']) {
@@ -110,7 +110,7 @@ class ShibbolethAuthenticationService extends AbstractAuthenticationService
             }
             if ($this->isLoginTypeFrontend()) {
                 // The frontend user was updated, it should be fetched again
-                $user = $this->fetchUserRecord($this->remoteUser);
+                $user = $this->fetchShibbolethUserRecord();
             }
         }
 
@@ -135,6 +135,22 @@ class ShibbolethAuthenticationService extends AbstractAuthenticationService
         }
 
         return $user;
+    }
+
+    /**
+     * Fetches the user record of the Shibboleth user
+     *
+     * Frontend users are imported to and updated in the storagePid only. Without restricting the lookup to it,
+     * a user of the same name in another folder is logged in instead, e.g. when the login request carries
+     * no "pid" parameter.
+     */
+    protected function fetchShibbolethUserRecord(): array|false
+    {
+        $extraWhere = '';
+        if ($this->isLoginTypeFrontend()) {
+            $extraWhere = 'pid = ' . (int)$this->extensionConfiguration['storagePid'];
+        }
+        return $this->fetchUserRecord($this->remoteUser, $extraWhere);
     }
 
     /**
