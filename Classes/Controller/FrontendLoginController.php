@@ -147,6 +147,10 @@ class FrontendLoginController extends ActionController
     {
         $redirectUrl = $this->extensionConfiguration['logoutHandler'];
         $redirectUrl = GeneralUtility::sanitizeLocalUrl($redirectUrl);
+        $logoutReturn = GeneralUtility::sanitizeLocalUrl((string)($this->request->getParsedBody()['logout_return'] ?? ''));
+        if ($logoutReturn !== '') {
+            $redirectUrl .= (str_contains($redirectUrl, '?') ? '&' : '?') . 'return=' . rawurlencode($logoutReturn);
+        }
         return $this->redirectToUri($redirectUrl);
     }
 
