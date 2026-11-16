@@ -37,7 +37,7 @@ class ShibbolethAuthenticationService extends AbstractAuthenticationService
 
     protected array $extensionConfiguration = [];
 
-    protected ?string $remoteUser = '';
+    protected ?string $remoteUser = null;
 
     public function init(): bool
     {
