@@ -4,7 +4,7 @@ namespace Visol\ShibbolethAuth\EventListener;
 
 use TYPO3\CMS\Core\Attribute\AsEventListener;
 use TYPO3\CMS\Core\Authentication\Event\AfterUserLoggedOutEvent;
-use TYPO3\CMS\Core\Utility\StringUtility;
+use TYPO3\CMS\Core\Configuration\ExtensionConfiguration;
 
 /**
  * This file is part of the TYPO3 CMS project.
@@ -24,13 +24,22 @@ use TYPO3\CMS\Core\Utility\StringUtility;
 )]
 final readonly class LogoutListener
 {
+    public function __construct(
+        private ExtensionConfiguration $extensionConfiguration,
+    ) {
+    }
 
     public function __invoke(AfterUserLoggedOutEvent $event): void
     {
+        // Like the former logoff_post_processing hook, only active with the backend integration enabled
+        if (!$this->extensionConfiguration->get('shibboleth_auth', 'enableBE')) {
+            return;
+        }
+
         // Delete the Shibboleth session cookie
         foreach ($_COOKIE as $name => $value) {
             if (\str_starts_with($name, '_shibsession_')) {
-                setcookie($name, null, -1, '/');
+                setcookie($name, '', -1, '/');
                 break;
             }
         }
